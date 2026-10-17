@@ -1,0 +1,347 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}</style><style>:root{color-scheme:light dark;--md-bg:#fff;--md-text:rgba(0,0,0,.8);--md-muted:rgba(0,0,0,.6);--md-fill:rgba(0,0,0,.04);--md-fill-strong:rgba(0,0,0,.06);--md-rule:rgba(0,0,0,.1);--md-rule-strong:rgba(0,0,0,.16);--md-link:hsl(210 100% 45%)}@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){--md-bg:#0d0d0d;--md-text:rgba(255,255,255,.85);--md-muted:rgba(255,255,255,.6);--md-fill:rgba(255,255,255,.06);--md-fill-strong:rgba(255,255,255,.09);--md-rule:rgba(255,255,255,.14);--md-rule-strong:rgba(255,255,255,.22);--md-link:hsl(210 100% 72%)}}:root[data-theme="dark"]{color-scheme:dark;--md-bg:#0d0d0d;--md-text:rgba(255,255,255,.85);--md-muted:rgba(255,255,255,.6);--md-fill:rgba(255,255,255,.06);--md-fill-strong:rgba(255,255,255,.09);--md-rule:rgba(255,255,255,.14);--md-rule-strong:rgba(255,255,255,.22);--md-link:hsl(210 100% 72%)}:root[data-theme="light"]{color-scheme:light}@media print{:root,:root[data-theme="dark"]{color-scheme:light;--md-bg:#fff;--md-text:rgba(0,0,0,.8);--md-muted:rgba(0,0,0,.6);--md-fill:rgba(0,0,0,.04);--md-fill-strong:rgba(0,0,0,.06);--md-rule:rgba(0,0,0,.1);--md-rule-strong:rgba(0,0,0,.16);--md-link:hsl(210 100% 45%)}}body{background:var(--md-bg);color:var(--md-text);max-width:720px;margin:0 auto;padding:32px;display:flex;flex-direction:column;gap:10px;font:14px/1.55 -apple-system,BlinkMacSystemFont,'SF Pro','Segoe UI',sans-serif;overflow-wrap:break-word}body>:first-child{margin-top:0}h1,h2,h3,h4,h5,h6{margin:6px 0 0;line-height:1.25;font-weight:600;text-wrap:balance}h1{font-size:1.35em}h2{font-size:1.15em;color:var(--md-muted)}h3,h4,h5,h6{font-size:1em}p,ul,ol,blockquote,table,pre,hr{margin:0}strong{font-weight:600}a{color:var(--md-link);text-decoration:none}a:hover{text-decoration:underline}ul,ol{display:flex;flex-direction:column;gap:6px;padding-left:22px}ul{list-style:disc}ol{list-style:decimal}:is(li,td,th)>*+:is(p,ul,ol,blockquote){margin-top:6px}blockquote{display:flex;flex-direction:column;gap:10px;border-left:2px solid var(--md-rule);padding-left:10px;color:var(--md-muted)}:not(pre)>code{background:var(--md-fill);padding:1px 3px;border-radius:4px;font:.92em 'SF Mono',ui-monospace,Menlo,Consolas,monospace}a>code{background:none;color:inherit}pre{background:var(--md-fill);padding:10px 12px;border-radius:6px;overflow-x:auto;font:12px/1.5 'SF Mono',ui-monospace,Menlo,Consolas,monospace;margin-block:4px}pre code{background:none;padding:0;font:inherit}table{width:100%;border-collapse:separate;border-spacing:2px;font:inherit}th,td{padding:6px 8px;border-radius:3px;text-align:left;vertical-align:top}th{background:var(--md-fill-strong);font-weight:600}td{background:var(--md-fill)}:is(th,td) :not(pre)>code{background:transparent}hr{border:0;border-top:1px solid var(--md-rule-strong);margin-block:10px}img{max-width:100%;height:auto;border-radius:4px}</style>
+</head><body>
+<h1>Mini-projet 1 : Déployer une application web à deux niveaux</h1>
+<h2>1. Fiche du mini-projet</h2>
+<table>
+<thead>
+<tr>
+<th>Rubrique</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cours</td>
+<td>Orchestration de conteneurs avec Kubernetes (k3s)</td>
+</tr>
+<tr>
+<td>Position</td>
+<td>Fin de la Partie 1 : Fondations (chapitres 1 à 3)</td>
+</tr>
+<tr>
+<td>Modalité</td>
+<td>En binôme, sur le cluster k3s du cours (un namespace par binôme)</td>
+</tr>
+<tr>
+<td>Durée</td>
+<td>3 h en séance + compte rendu à rendre sous une semaine</td>
+</tr>
+<tr>
+<td>Prérequis</td>
+<td>Labs 1.1, 1.2, 2.1, 2.2, 3.1 et 3.2 réalisés</td>
+</tr>
+<tr>
+<td>Environnement</td>
+<td>Poste Windows, VMware Workstation, 3 VMs Ubuntu Server avec k3s (voir Annexe A)</td>
+</tr>
+<tr>
+<td>Acquis visés</td>
+<td>AA1 (expliquer l'architecture), AA2 (déployer et mettre à jour), AA3 (exposer des services)</td>
+</tr>
+</tbody>
+</table>
+<h2>2. Contexte</h2>
+<p>Une jeune entreprise souhaite mettre en ligne la première version d'un service composé de deux briques :</p>
+<ul>
+<li>un <strong>frontend</strong> (le site web vu par l'utilisateur) ;</li>
+<li>une <strong>API</strong> (le service qui fournit les données).</li>
+</ul>
+<p>Vous êtes l'équipe DevOps. Votre mission : déployer ces deux briques sur Kubernetes de façon <strong>déclarative</strong> (tout en fichiers YAML versionnés), les faire communiquer, les rendre accessibles depuis l'extérieur, puis démontrer que vous savez les <strong>mettre à jour sans interruption</strong> et <strong>diagnostiquer une panne</strong>.</p>
+<h2>3. Objectifs pédagogiques</h2>
+<p>À l'issue du mini-projet, vous serez capables de :</p>
+<ol>
+<li>traduire une architecture applicative en objets Kubernetes ;</li>
+<li>choisir le bon type de Service selon l'usage (interne ou externe) ;</li>
+<li>exposer deux applications derrière un point d'entrée unique avec Ingress ;</li>
+<li>réaliser un rolling update et un rollback, et en expliquer le mécanisme ;</li>
+<li>mener une démarche de diagnostic méthodique (observer, formuler une hypothèse, corriger).</li>
+</ol>
+<h2>4. Architecture cible</h2>
+<pre><code>                 Utilisateur
+                     |
+              Ingress (Traefik)
+          web.k3s.local | api.k3s.local
+              /                 \
+   Service frontend-svc     Service api-svc
+        (ClusterIP)           (ClusterIP)
+             |                     |
+   Deployment frontend     Deployment api
+     (2 réplicas)           (3 réplicas)
+</code></pre>
+<p>Le frontend doit pouvoir joindre l'API <strong>à l'intérieur du cluster</strong> en utilisant son nom DNS de Service.</p>
+<h2>5. Cahier des charges</h2>
+<table>
+<thead>
+<tr>
+<th>N°</th>
+<th>Exigence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E1</td>
+<td>Tout est créé dans un namespace dédié à votre binôme.</td>
+</tr>
+<tr>
+<td>E2</td>
+<td>L'API est déployée par un Deployment de <strong>3 réplicas</strong>, avec une image dont la version est <strong>explicitement indiquée</strong> (pas de tag <code>latest</code>).</td>
+</tr>
+<tr>
+<td>E3</td>
+<td>Le frontend est déployé par un Deployment de <strong>2 réplicas</strong>.</td>
+</tr>
+<tr>
+<td>E4</td>
+<td>Chaque Deployment porte des labels cohérents (<code>app</code>, <code>tier</code>) utilisés par les sélecteurs.</td>
+</tr>
+<tr>
+<td>E5</td>
+<td>L'API et le frontend sont chacun exposés en interne par un Service de type <strong>ClusterIP</strong>.</td>
+</tr>
+<tr>
+<td>E6</td>
+<td>Depuis un Pod du frontend, l'API est joignable par son <strong>nom DNS</strong> (sans adresse IP).</td>
+</tr>
+<tr>
+<td>E7</td>
+<td>Un Ingress rend le frontend accessible sur <code>web.k3s.local</code> et l'API sur <code>api.k3s.local</code>.</td>
+</tr>
+<tr>
+<td>E8</td>
+<td>Les ressources sont décrites dans des <strong>manifestes YAML</strong> rangés dans un dépôt Git (aucune ressource créée uniquement en ligne de commande).</td>
+</tr>
+<tr>
+<td>E9</td>
+<td>Une mise à jour de l'API vers une version plus récente se fait <strong>sans coupure</strong> (vérifiée par une boucle de requêtes).</td>
+</tr>
+<tr>
+<td>E10</td>
+<td>Un incident volontaire est diagnostiqué et corrigé, avec explication écrite.</td>
+</tr>
+</tbody>
+</table>
+<h2>6. Images suggérées</h2>
+<ul>
+<li><strong>API :</strong> <code>ghcr.io/stefanprodan/podinfo</code> (écoute sur le port 9898, renvoie du JSON dont sa version). Choisissez deux versions proches, par exemple <code>6.5.4</code> puis une plus récente.</li>
+<li><strong>Frontend :</strong> <code>nginx:alpine</code> (écoute sur le port 80).</li>
+</ul>
+<p>Votre enseignant peut vous imposer d'autres images équivalentes.</p>
+<h2>7. Démarche guidée en étapes</h2>
+<p>Chaque étape propose un but, des indices (pas la solution) et une question de réflexion à traiter dans votre compte rendu.</p>
+<h3>Étape 0 : Préparer le terrain (15 min)</h3>
+<ul>
+<li><strong>But :</strong> disposer d'un espace de travail propre.</li>
+<li><strong>Indices :</strong> créer le dépôt Git avec un dossier <code>manifests/</code>, créer votre namespace, le définir comme namespace par défaut de votre contexte.</li>
+<li><strong>Question :</strong> pourquoi isoler un projet dans un namespace ?</li>
+</ul>
+<h3>Étape 1 : Déployer l'API (30 min)</h3>
+<ul>
+<li><strong>But :</strong> obtenir 3 Pods d'API en fonctionnement.</li>
+<li><strong>Indices :</strong> générer un squelette YAML avec <code>kubectl create deployment ... --dry-run=client -o yaml</code>, l'enregistrer dans <code>manifests/</code>, puis l'appliquer avec <code>kubectl apply -f</code>. Vérifier avec <code>get pods -o wide</code>.</li>
+<li><strong>Question :</strong> sur quels nœuds les Pods sont-ils répartis, et qui a pris cette décision ?</li>
+</ul>
+<h3>Étape 2 : Déployer le frontend (20 min)</h3>
+<ul>
+<li><strong>But :</strong> obtenir 2 Pods de frontend.</li>
+<li><strong>Indices :</strong> même démarche que l'étape 1. Vérifiez que les labels diffèrent entre les deux Deployments.</li>
+<li><strong>Question :</strong> que se passerait-il si les deux Deployments utilisaient exactement les mêmes labels ?</li>
+</ul>
+<h3>Étape 3 : Créer les Services et tester la communication interne (30 min)</h3>
+<ul>
+<li><strong>But :</strong> rendre les deux briques joignables et prouver la communication frontend vers API.</li>
+<li><strong>Indices :</strong> un Service par Deployment, de type ClusterIP. Exécutez une commande depuis un Pod du frontend (<code>kubectl exec</code>) pour appeler l'API par son nom DNS.</li>
+<li><strong>Questions :</strong> quel est le nom DNS complet d'un Service ? Que renvoie <code>get endpoints</code> et pourquoi est-ce utile au diagnostic ?</li>
+</ul>
+<h3>Étape 4 : Exposer avec Ingress (30 min)</h3>
+<ul>
+<li><strong>But :</strong> accéder aux deux applications depuis votre navigateur ou avec <code>curl</code>.</li>
+<li><strong>Indices :</strong> un objet Ingress avec deux règles par hôte, géré par Traefik (fourni par k3s). Ajoutez les noms d'hôte dans le fichier <code>hosts</code> de votre poste Windows (ou utilisez l'en-tête <code>Host</code> avec <code>curl.exe</code>) : voir Annexe A.</li>
+<li><strong>Question :</strong> pourquoi préfère-t-on un Ingress à deux Services de type NodePort ?</li>
+</ul>
+<h3>Étape 5 : Mise à jour sans coupure (25 min)</h3>
+<ul>
+<li><strong>But :</strong> passer l'API à une nouvelle version sans interruption.</li>
+<li><strong>Indices :</strong> lancez dans un terminal une boucle de requêtes vers l'API pendant que vous modifiez l'image dans le manifeste puis réappliquez. Observez <code>rollout status</code> et les ReplicaSets.</li>
+<li><strong>Questions :</strong> combien de ReplicaSets existent après la mise à jour, et pourquoi l'ancien est-il conservé ? Quelle commande permet de revenir en arrière ?</li>
+</ul>
+<h3>Étape 6 : Panne et diagnostic (25 min)</h3>
+<ul>
+<li><strong>But :</strong> appliquer une démarche de dépannage.</li>
+<li><strong>Scénario imposé :</strong> votre enseignant (ou votre binôme voisin) modifie un manifeste pour introduire une panne, par exemple un tag d'image inexistant ou un sélecteur de Service erroné. Votre rôle est de la trouver et de la corriger.</li>
+<li><strong>Indices :</strong> <code>get</code>, <code>describe</code>, <code>events</code>, <code>logs</code>, <code>get endpoints</code>. Notez l'ordre de vos investigations.</li>
+<li><strong>Question :</strong> quels symptômes vous ont mis sur la piste, et quelle est la cause racine ?</li>
+</ul>
+<h2>8. Livrables</h2>
+<ol>
+<li><strong>Dépôt Git</strong> contenant le dossier <code>manifests/</code> (au minimum : deux Deployments, deux Services, un Ingress) et un <code>README.md</code> expliquant comment déployer l'ensemble.</li>
+<li><strong>Compte rendu</strong> (2 à 4 pages) comprenant :
+<ul>
+<li>le schéma d'architecture réalisé par vos soins ;</li>
+<li>les réponses aux questions de chaque étape ;</li>
+<li>des captures ou sorties de commandes prouvant que chaque exigence est satisfaite ;</li>
+<li>un court paragraphe « difficultés rencontrées et enseignements ».</li>
+</ul>
+</li>
+<li><strong>Démonstration orale</strong> de 5 minutes (accès aux applications, mise à jour, rollback).</li>
+</ol>
+<h2>9. Grille d'évaluation (/20)</h2>
+<table>
+<thead>
+<tr>
+<th>Critère</th>
+<th>Points</th>
+<th>AA</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Deployments corrects (réplicas, versions, labels)</td>
+<td>4</td>
+<td>AA2</td>
+</tr>
+<tr>
+<td>Services et communication interne par DNS</td>
+<td>3</td>
+<td>AA3</td>
+</tr>
+<tr>
+<td>Ingress fonctionnel pour les deux hôtes</td>
+<td>3</td>
+<td>AA3</td>
+</tr>
+<tr>
+<td>Mise à jour sans coupure et rollback</td>
+<td>3</td>
+<td>AA2</td>
+</tr>
+<tr>
+<td>Diagnostic de la panne (démarche et explication)</td>
+<td>3</td>
+<td>AA1</td>
+</tr>
+<tr>
+<td>Qualité du dépôt Git et du compte rendu</td>
+<td>4</td>
+<td>AA1</td>
+</tr>
+</tbody>
+</table>
+<h2>10. Pour aller plus loin (facultatif)</h2>
+<ul>
+<li>Ajouter des <code>resources.requests</code> et <code>limits</code> à l'API et expliquer leur effet sur le placement.</li>
+<li>Faire échouer volontairement une mise à jour et utiliser <code>rollout undo</code>.</li>
+<li>Ajouter un troisième hôte <code>docs.k3s.local</code> servant une page statique.</li>
+</ul>
+<h2>11. Aide-mémoire</h2>
+<table>
+<thead>
+<tr>
+<th>Besoin</th>
+<th>Commande</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Générer un squelette YAML</td>
+<td><code>kubectl create deployment ... --dry-run=client -o yaml</code></td>
+</tr>
+<tr>
+<td>Appliquer des manifestes</td>
+<td><code>kubectl apply -f manifests/</code></td>
+</tr>
+<tr>
+<td>Voir Pods et nœuds</td>
+<td><code>kubectl get pods -o wide</code></td>
+</tr>
+<tr>
+<td>Diagnostiquer</td>
+<td><code>kubectl describe</code>, <code>kubectl logs</code>, <code>kubectl get events</code></td>
+</tr>
+<tr>
+<td>Vérifier un Service</td>
+<td><code>kubectl get endpoints</code></td>
+</tr>
+<tr>
+<td>Suivre une mise à jour</td>
+<td><code>kubectl rollout status deployment/&lt;nom&gt;</code></td>
+</tr>
+<tr>
+<td>Revenir en arrière</td>
+<td><code>kubectl rollout undo deployment/&lt;nom&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2>Annexe A : Environnement de travail (VMware Workstation sur poste Windows)</h2>
+<h3>A.1 Topologie</h3>
+<table>
+<thead>
+<tr>
+<th>Machine</th>
+<th>Rôle</th>
+<th>Ressources conseillées</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Poste Windows (hôte)</td>
+<td><code>kubectl</code>, navigateur, <code>curl.exe</code>, Git</td>
+<td>16 Go de RAM recommandés pour l'hôte</td>
+</tr>
+<tr>
+<td>VM 1 (Ubuntu Server)</td>
+<td>Serveur k3s (control plane)</td>
+<td>2 vCPU, 2 Go de RAM</td>
+</tr>
+<tr>
+<td>VM 2 (Ubuntu Server)</td>
+<td>Agent k3s</td>
+<td>2 vCPU, 2 Go de RAM</td>
+</tr>
+<tr>
+<td>VM 3 (Ubuntu Server)</td>
+<td>Agent k3s</td>
+<td>2 vCPU, 2 Go de RAM</td>
+</tr>
+</tbody>
+</table>
+<h3>A.2 Réseau</h3>
+<ul>
+<li>Placez les 3 VMs sur le même réseau VMware : <strong>NAT (VMnet8)</strong> pour un accès Internet et un accès depuis Windows, ou <strong>bridged</strong> pour utiliser le réseau local.</li>
+<li>Attribuez des <strong>IP statiques</strong> aux VMs (configuration <code>netplan</code> sous Ubuntu). Si les IP changent, les agents ne retrouvent plus le serveur et vos entrées <code>hosts</code> deviennent fausses.</li>
+<li>Si le pare-feu <code>ufw</code> est actif sur les VMs, désactivez-le pour le TP ou ouvrez les ports nécessaires à k3s.</li>
+</ul>
+<h3>A.3 Accéder aux applications depuis Windows</h3>
+<ol>
+<li>Ouvrez le Bloc-notes <strong>en administrateur</strong> puis le fichier <code>C:\Windows\System32\drivers\etc\hosts</code>.</li>
+<li>Ajoutez une ligne associant l'IP d'un nœud k3s aux deux noms d'hôte :
+<code>&lt;IP_NOEUD&gt;  web.k3s.local  api.k3s.local</code></li>
+<li>Testez dans PowerShell avec <code>curl.exe</code> (et non <code>curl</code>, qui est un alias de <code>Invoke-WebRequest</code>) :
+<code>curl.exe http://api.k3s.local</code></li>
+<li>Alternative sans modifier <code>hosts</code> : <code>curl.exe -H &quot;Host: api.k3s.local&quot; http://&lt;IP_NOEUD&gt;</code>.</li>
+</ol>
+<p>Boucle de requêtes pour l'étape 5, dans PowerShell :
+<code>while ($true) { curl.exe -s http://api.k3s.local; Start-Sleep -Milliseconds 500 }</code></p>
+<h3>A.4 Utiliser kubectl depuis Windows (facultatif)</h3>
+<ol>
+<li>Installez <code>kubectl</code> sur Windows.</li>
+<li>Copiez le fichier <code>/etc/rancher/k3s/k3s.yaml</code> du serveur vers votre poste (par exemple avec <code>scp</code>).</li>
+<li>Remplacez <code>127.0.0.1</code> par l'IP de la VM serveur dans ce fichier.</li>
+<li>Définissez la variable <code>KUBECONFIG</code> vers ce fichier. Sinon, travaillez directement en SSH sur la VM serveur.</li>
+</ol>
+<h3>A.5 Test de validation avant de commencer</h3>
+<ul>
+<li><code>kubectl get nodes</code> affiche <strong>3 nœuds en état <code>Ready</code></strong>.</li>
+<li><code>kubectl get pods -A</code> montre les Pods système (dont Traefik) en <code>Running</code>.</li>
+<li><code>kubectl run test --image=nginx:alpine</code> aboutit (les VMs ont accès à Internet), puis supprimez ce Pod.</li>
+<li>Depuis Windows, <code>curl.exe -I http://&lt;IP_NOEUD&gt;</code> reçoit une réponse de Traefik (même une erreur 404 prouve que le chemin réseau fonctionne).</li>
+</ul>
+<h2>Annexe B : Annexe enseignant</h2>
+<ul>
+<li><strong>Avant la séance :</strong> faites un <strong>snapshot de chaque VM</strong> une fois k3s installé et propre, pour pouvoir remettre à zéro entre deux groupes ou après la panne de l'étape 6. Vérifiez l'heure des VMs après une suspension (synchronisation <code>chrony</code>).</li>
+<li><strong>Points de vigilance :</strong> noms d'hôte non résolus sur les postes Windows (éditeur non lancé en administrateur), IP des VMs qui changent, sélecteurs de Service qui ne correspondent pas aux labels, tag d'image mal orthographié.</li>
+<li><strong>Variantes de panne pour l'étape 6 :</strong> port de Service erroné, label modifié dans le template du Deployment, nom d'hôte erroné dans l'Ingress.</li>
+<li><strong>Évolution :</strong> ce mini-projet est le point de départ du Mini-projet 2 (ajout de base de données, configuration externalisée, RBAC, NetworkPolicies).</li>
+</ul>
+
+</body></html>

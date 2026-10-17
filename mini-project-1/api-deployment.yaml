@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: task-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: task-app
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: task-app
+        tier: backend
+    spec:
+      containers:
+        - name: api
+          image: ghcr.io/stefanprodan/podinfo:6.6.0
+          ports:
+            - containerPort: 9898
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 9898
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 9898
+            initialDelaySeconds: 5
+            periodSeconds: 10
