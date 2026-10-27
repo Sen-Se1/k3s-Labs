@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: task-app-config
+  namespace: task-app
+data:
+  POSTGRES_HOST: "db"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "taskdb"
+  BACKEND_PORT: "3000"
+  FRONTEND_PORT: "8080"
+  API_URL: "http://api-svc:3000"

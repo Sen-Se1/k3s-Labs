@@ -1,0 +1,122 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: db-backup
+  namespace: task-app
+  labels:
+    app: taskmaster
+    tier: backup
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 300
+
+      template:
+        metadata:
+          labels:
+            app: taskmaster
+            tier: backup
+
+        spec:
+          restartPolicy: OnFailure
+          automountServiceAccountToken: false
+
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+            runAsGroup: 999
+            fsGroup: 999
+            seccompProfile:
+              type: RuntimeDefault
+
+          containers:
+            - name: backup
+              image: postgres:16-alpine
+              imagePullPolicy: IfNotPresent
+
+              command:
+                - /bin/sh
+                - -c
+
+              args:
+                - |
+                  set -eu
+
+                  FILE="/backup/dump-$(date +%Y%m%d-%H%M%S).sql"
+
+                  echo "Début de la sauvegarde de ${POSTGRES_DB}..."
+
+                  pg_dump \
+                    --host="${POSTGRES_HOST}" \
+                    --port="${POSTGRES_PORT}" \
+                    --username="${POSTGRES_USER}" \
+                    --dbname="${POSTGRES_DB}" \
+                    --no-password \
+                    --format=plain \
+                    --file="${FILE}"
+
+                  test -s "${FILE}"
+
+                  echo "Sauvegarde terminée : ${FILE}"
+                  ls -lh "${FILE}"
+
+              env:
+                - name: POSTGRES_HOST
+                  valueFrom:
+                    configMapKeyRef:
+                      name: task-app-config
+                      key: POSTGRES_HOST
+
+                - name: POSTGRES_PORT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: task-app-config
+                      key: POSTGRES_PORT
+
+                - name: POSTGRES_DB
+                  valueFrom:
+                    configMapKeyRef:
+                      name: task-app-config
+                      key: POSTGRES_DB
+
+                - name: POSTGRES_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials
+                      key: POSTGRES_USER
+
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials
+                      key: POSTGRES_PASSWORD
+
+              volumeMounts:
+                - name: backup
+                  mountPath: /backup
+
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+
+          volumes:
+            - name: backup
+              persistentVolumeClaim:
+                claimName: backup-pvc
