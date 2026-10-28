@@ -3,7 +3,6 @@ kind: ConfigMap
 metadata:
   name: frontend-nginx-config
   namespace: task-app
-
 data:
   default.conf: |
     server {
@@ -42,26 +41,24 @@ metadata:
   labels:
     app: taskmaster
     tier: frontend
-
 spec:
   replicas: 2
-
   selector:
     matchLabels:
       app: taskmaster
       tier: frontend
-
   template:
     metadata:
       labels:
         app: taskmaster
         tier: frontend
-
     spec:
       serviceAccountName: frontend-sa
       automountServiceAccountToken: false
 
       securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
         seccompProfile:
           type: RuntimeDefault
 
@@ -72,10 +69,9 @@ spec:
 
           command:
             - nginx
-
           args:
             - -g
-            - daemon off;
+            - "daemon off;"
 
           ports:
             - name: http
@@ -87,6 +83,15 @@ spec:
               mountPath: /etc/nginx/conf.d/default.conf
               subPath: default.conf
               readOnly: true
+
+            - name: nginx-cache
+              mountPath: /var/cache/nginx
+
+            - name: nginx-run
+              mountPath: /var/run
+
+            - name: tmp
+              mountPath: /tmp
 
           readinessProbe:
             httpGet:
@@ -118,6 +123,7 @@ spec:
             runAsNonRoot: true
             runAsUser: 101
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - ALL
@@ -126,6 +132,15 @@ spec:
         - name: nginx-config
           configMap:
             name: frontend-nginx-config
+
+        - name: nginx-cache
+          emptyDir: {}
+
+        - name: nginx-run
+          emptyDir: {}
+
+        - name: tmp
+          emptyDir: {}
 
 ---
 apiVersion: v1
@@ -136,14 +151,11 @@ metadata:
   labels:
     app: taskmaster
     tier: frontend
-
 spec:
   type: ClusterIP
-
   selector:
     app: taskmaster
     tier: frontend
-
   ports:
     - name: http
       port: 8080

@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: restricted-test
+  namespace: task-app
+  labels:
+    app: restricted-test
+spec:
+  restartPolicy: Never
+
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    seccompProfile:
+      type: RuntimeDefault
+
+  containers:
+    - name: restricted-test
+      image: busybox:1.36
+      command:
+        - sh
+        - -c
+        - "id && sleep 3600"
+
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        runAsNonRoot: true
+        runAsUser: 1000

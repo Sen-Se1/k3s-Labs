@@ -72,6 +72,8 @@ spec:
             capabilities:
               drop:
                 - ALL
+            seccompProfile:
+              type: RuntimeDefault
 
       containers:
         - name: api
@@ -100,6 +102,10 @@ spec:
                   name: db-credentials
                   key: POSTGRES_PASSWORD
 
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+
           readinessProbe:
             httpGet:
               path: /ready
@@ -127,10 +133,19 @@ spec:
               memory: 512Mi
 
           securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - ALL
+            seccompProfile:
+              type: RuntimeDefault
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
 
       restartPolicy: Always
 

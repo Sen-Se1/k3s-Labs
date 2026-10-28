@@ -6,7 +6,6 @@ metadata:
   labels:
     app: taskmaster
     tier: db
-
 spec:
   serviceName: db
   replicas: 1
@@ -25,6 +24,7 @@ spec:
     spec:
       serviceAccountName: db-sa
       automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 30
 
       securityContext:
         runAsNonRoot: true
@@ -76,6 +76,12 @@ spec:
               subPath: init.sql
               readOnly: true
 
+            - name: postgres-run
+              mountPath: /var/run/postgresql
+
+            - name: tmp
+              mountPath: /tmp
+
           readinessProbe:
             exec:
               command:
@@ -108,6 +114,7 @@ spec:
 
           securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - ALL
@@ -116,6 +123,12 @@ spec:
         - name: init-sql
           configMap:
             name: postgres-init-sql
+
+        - name: postgres-run
+          emptyDir: {}
+
+        - name: tmp
+          emptyDir: {}
 
   volumeClaimTemplates:
     - metadata:
