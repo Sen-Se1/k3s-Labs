@@ -48,7 +48,7 @@ Les Services applicatifs sont internes au cluster. L'accès web passe par l'Ingr
   - `sen5e1/task-backend:1.2`
   - `sen5e1/task-frontend:1.2`
   - `postgres:15-alpine`
-  - `postgres:16-alpine` pour le job de sauvegarde.
+  - `postgres:15-alpine` pour le job de sauvegarde.
 - Git et un terminal sur la machine d'administration.
 - Un poste client capable de résoudre le nom `app.k3s.local`.
 - Un moteur réseau qui applique effectivement les NetworkPolicies.
