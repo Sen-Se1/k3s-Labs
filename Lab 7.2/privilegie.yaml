@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: privilegie
+spec:
+  containers:
+    - name: app
+      image: nginx:1.26-alpine
+      securityContext:
+        privileged: true

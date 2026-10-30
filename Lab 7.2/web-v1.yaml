@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web-v1
+spec:
+  securityContext:
+    runAsNonRoot: true
+  containers:
+    - name: web
+      image: nginx:1.26-alpine
